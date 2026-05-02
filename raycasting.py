@@ -30,7 +30,7 @@ screen = pygame.display.set_mode(SCREEN_RES)
 clock = pygame.time.Clock()
 
 #Position
-player_x, player_y = 100, 100
+player_x, player_y = 100, 100 
 player_angle = 180
 
 #raycasting functions
@@ -54,7 +54,7 @@ def cast_rays():
                 wall_height = 21000 / (depth + 0.0001)
                 
                 # Draw vertical slice
-                color = 255 / (1 + depth * depth * 0.0001) # Simple shading
+                color = 255 / (1 + depth * depth * 0.0001) # Simple shading to make far away walls look darker
                 pygame.draw.rect(screen, (color, color, color), (
                     ray * (SCREEN_RES[0] / CASTED_RAYS),
                     (SCREEN_RES[1] / 2) - wall_height / 2,
@@ -71,16 +71,33 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             
+
+    
     # Movement
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]: player_angle -= 0.05 #turn left
     if keys[pygame.K_RIGHT]: player_angle += 0.05 #turn right
+    
+    new_x = player_x
+    new_y = player_y
+    
     if keys[pygame.K_UP]: #move forward
-        player_x += math.cos(player_angle) * 3
-        player_y += math.sin(player_angle) * 3
+        new_x += math.cos(player_angle) * 3
+        new_y += math.sin(player_angle) * 3
     if keys[pygame.K_DOWN]: #move back
-        player_x -= math.cos(player_angle) * 3
-        player_y -= math.sin(player_angle) * 3
+        new_x -= math.cos(player_angle) * 3
+        new_y -= math.sin(player_angle) * 3
+        
+    #collision check 
+    buffer = 10 if keys[pygame.K_w] else -10
+    check_x = new_x + math.cos(player_angle) * buffer
+    check_y = new_y + math.sin(player_angle) * buffer
+    
+    #update pos only if 0
+    if MAP[int(player_y / TILE_SIZE)][int(check_x / TILE_SIZE)] == 0:
+        player_x = new_x
+    if MAP[int(check_y / TILE_SIZE)][int(player_x / TILE_SIZE)] == 0:
+        player_y = new_y
 
     # Rendering
     screen.fill((50, 50, 50)) # Ceiling
